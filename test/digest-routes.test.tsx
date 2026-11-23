@@ -7,8 +7,9 @@ import { createApp } from '../src/app.js';
 // Plan morning-digest § 2d. Route tests for GET /digest/:night (§ 2a, issue #2) and
 // GET /api/digest/:night (§ 2b, issue #3).
 //
-// SKIPPED until #2 and #3 are merged: this branch has neither route, so every request here
-// would answer 404 for the wrong reason. To un-skip, change `describe.skip` to `describe`.
+// Written on the #5 branch before #2 and #3 existed, so these were skipped there: without the
+// routes every request would have answered 404 for the wrong reason. Un-skipped once #2 and #3
+// were merged into main.
 
 const line = (at: string, job: string, status: string, owner: string | null, error?: string) =>
   JSON.stringify({ at, job, status, owner, ...(error === undefined ? {} : { error }) });
@@ -70,11 +71,16 @@ async function jsonJobs(res: Response): Promise<string[]> {
   });
 }
 
+// Read the job names off the page itself, in the order it printed them: the first cell of
+// every row in the table body. Written against a fixed list of names first, which silently
+// returned nothing for a night whose jobs were not on that list.
 function jobsInPage(html: string): string[] {
-  return JOBS_IN_ORDER.filter((job) => html.includes(job)).sort((a, b) => html.indexOf(a) - html.indexOf(b));
+  const body = html.match(/<tbody>([\s\S]*?)<\/tbody>/);
+  if (body === null) return [];
+  return [...body[1].matchAll(/<tr[^>]*>\s*<td[^>]*>([^<]+)<\/td>/g)].map((m) => m[1].trim());
 }
 
-describe.skip('digest page GET /digest/:night (waits on #2)', () => {
+describe('digest page GET /digest/:night', () => {
   it('200: renders the jobs in order, with the failure and the 3 retries shown', async () => {
     const res = await app().request('/digest/2026-10-28');
     const html = await res.text();
@@ -105,7 +111,7 @@ describe.skip('digest page GET /digest/:night (waits on #2)', () => {
   });
 });
 
-describe.skip('digest JSON GET /api/digest/:night (waits on #3)', () => {
+describe('digest JSON GET /api/digest/:night', () => {
   it('200: returns JSON with the jobs in order', async () => {
     const res = await app().request('/api/digest/2026-10-28');
     expect(res.status).toBe(200);
@@ -131,11 +137,11 @@ describe.skip('digest JSON GET /api/digest/:night (waits on #3)', () => {
   });
 });
 
-describe.skip('page and JSON agree (waits on #2 and #3)', () => {
+describe('page and JSON agree', () => {
   it.each(['2026-10-28', '2026-10-29', '2026-10-30'])('%s: same jobs, same order', async (night) => {
     const page = await (await app().request(`/digest/${night}`)).text();
     const json = await jsonJobs(await app().request(`/api/digest/${night}`));
-    expect(jobsInPage(page)).toEqual(json.filter((job) => page.includes(job)));
+    expect(jobsInPage(page)).toEqual(json);
     expect(json).toEqual([...json].sort());
   });
 });
