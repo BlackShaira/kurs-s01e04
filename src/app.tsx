@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { readNight } from './digest/reader.js';
 import { loadConfig, type RigConfig } from './config.js';
 import { lane } from './lane.js';
 import { readStatus } from './status.js';
@@ -17,6 +18,16 @@ export function createApp(config: RigConfig = loadConfig()) {
       </Layout>,
     ),
   );
+
+  // Same source as the page: readNight, rows in the order the reader returns them. The body is
+  // the NightDigest itself, not a copy rebuilt here, so the two cannot drift (ADR 0001).
+  // A night that is not a date, or has no file, is a 404.
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const digest = /^\d{4}-\d{2}-\d{2}$/.test(night) ? readNight(config.runsDir, night) : null;
+    if (digest === null) return c.json({ error: 'no such night', night }, 404);
+    return c.json(digest);
+  });
 
   return app;
 }
