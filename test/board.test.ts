@@ -2,8 +2,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { createApp } from './app.js';
-import { countNight } from './digest/counts.js';
+import { createApp } from '../src/app.js';
+import { countNight } from '../src/digest/counts.js';
 
 const line = (status: string, job = 'a') => JSON.stringify({ at: '2026-10-28T23:00:00+01:00', job, status });
 

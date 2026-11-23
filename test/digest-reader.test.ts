@@ -2,8 +2,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { readNight } from './reader.js';
-import type { DigestRow } from './types.js';
+import { readNight } from '../src/digest/reader.js';
+import type { DigestRow } from '../src/digest/types.js';
 
 // `runs/` is read-only: these are the real nights. Anything this test needs to write goes to
 // its own temp dir.
