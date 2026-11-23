@@ -7,6 +7,11 @@ import { DigestPage, NotFound } from './views/digest.js';
 import { Layout } from './views/layout.js';
 import { StatusBoard } from './views/status.js';
 
+// Both digest routes read through the same `readNight` and keep the rows in the order the
+// reader returns them, so the page and the JSON cannot drift apart (ADR 0001). Only a plain
+// date names a file: nothing else reaches the filesystem.
+const NIGHT = /^\d{4}-\d{2}-\d{2}$/;
+
 export function createApp(config: RigConfig = loadConfig()) {
   const app = new Hono();
 
@@ -22,8 +27,7 @@ export function createApp(config: RigConfig = loadConfig()) {
 
   app.get('/digest/:night', (c) => {
     const night = c.req.param('night');
-    // Only a plain date names a file: nothing else reaches the filesystem.
-    const digest = /^\d{4}-\d{2}-\d{2}$/.test(night) ? readNight(config.runsDir, night) : null;
+    const digest = NIGHT.test(night) ? readNight(config.runsDir, night) : null;
     if (digest === null) {
       return c.html(
         <Layout title="no digest" lane={lane()}>
@@ -37,6 +41,13 @@ export function createApp(config: RigConfig = loadConfig()) {
         <DigestPage digest={digest} />
       </Layout>,
     );
+  });
+
+  app.get('/api/digest/:night', (c) => {
+    const night = c.req.param('night');
+    const digest = NIGHT.test(night) ? readNight(config.runsDir, night) : null;
+    if (digest === null) return c.json({ error: 'no such night', night }, 404);
+    return c.json(digest);
   });
 
   return app;
