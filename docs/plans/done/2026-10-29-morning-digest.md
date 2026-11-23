@@ -1,8 +1,9 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
+closed: 2026-11-23
 ---
 
 # Morning digest
@@ -77,3 +78,19 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issues
+
+| # | Issue | Blocked by | Worker | Closed |
+|---|-------|-----------|--------|--------|
+| 1 | Run log reader | — | claude-code · claude-opus-5 · medium | 2026-11-23 |
+| 2 | Page: GET /digest/:night | #1 | claude-code · claude-sonnet-5-5 · default | 2026-11-23 |
+| 3 | JSON: GET /api/digest/:night | #1 | claude-code · claude-sonnet-5-5 · default | 2026-11-23 |
+| 4 | Board link: each night links to its digest with counts | #1 | claude-code · claude-sonnet-5-5 · low | 2026-11-23 |
+| 5 | Route tests: the digest page and the JSON | #1 | claude-code · claude-sonnet-5-5 · low | 2026-11-23 |
+| 6 | Preview for review | #5 | claude-code · claude-opus-5 · medium | 2026-11-23 |
+| 7 | Clean up: take the lane marker off the preview | #6 | claude-code · claude-opus-5 · medium | 2026-11-23 |
+
+#2 to #5 ran at the same time, each in its own worktree, because they needed only
+`src/digest/types.ts` from #1. The preview's per-deployment link still served the lane
+marker after the clean-up upload, so that deployment was deleted. See ADR 0003.
