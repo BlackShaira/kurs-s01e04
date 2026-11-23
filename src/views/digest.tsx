@@ -44,7 +44,7 @@ export function DigestPage({ digest }: { digest: NightDigest }) {
                   <td>{row.lastError ?? MISSING}</td>
                   <td>{row.firstAt}</td>
                   <td>{row.lastAt}</td>
-                  <td class="warn">{m.length > 0 ? m.join(', ') : MISSING}</td>
+                  <td class={m.length > 0 ? 'warn' : undefined}>{m.length > 0 ? m.join(', ') : MISSING}</td>
                 </tr>
               );
             })}
